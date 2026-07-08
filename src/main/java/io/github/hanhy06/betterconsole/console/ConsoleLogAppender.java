@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class ConsoleLogAppender extends AbstractAppender {
-    private static final String APPENDER_NAME = "BetterConsole";
+    private static final String APPENDER_NAME = "BetterConsoleLine";
     private static final int QUEUE_CAPACITY = 8192;
     private static final String ANSI_CYAN = "\u001B[36m";
     private static final String ANSI_GREEN = "\u001B[32m";
@@ -58,7 +58,7 @@ public final class ConsoleLogAppender extends AbstractAppender {
         this.originalAppender = originalAppender;
         this.bindings = bindings;
         this.outputThread = Thread.ofPlatform()
-                .name("Better Console output")
+                .name("Better Console Line output")
                 .daemon(true)
                 .unstarted(this::writeMessages);
     }
@@ -165,7 +165,7 @@ public final class ConsoleLogAppender extends AbstractAppender {
         long dropped = droppedMessages.getAndSet(0);
         if (dropped == 0) return;
 
-        reader.printAbove("[Better Console] Console log messages omitted: " + dropped + System.lineSeparator());
+        reader.printAbove("[Better Console Line] Console log messages omitted: " + dropped + System.lineSeparator());
     }
 
     private static ConsoleAppender findConsoleAppender(Configuration configuration) {
@@ -192,7 +192,7 @@ public final class ConsoleLogAppender extends AbstractAppender {
     }
 
     private static boolean isColorEnabled(Terminal terminal) {
-        String configured = System.getProperty("betterconsole.color", "auto");
+        String configured = System.getProperty("better-console-line.color", "auto");
         if (configured.equalsIgnoreCase("true")) return true;
         if (configured.equalsIgnoreCase("false")) return false;
         if (System.getenv("NO_COLOR") != null) return false;

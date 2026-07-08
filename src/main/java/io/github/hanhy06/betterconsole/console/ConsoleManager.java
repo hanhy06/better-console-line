@@ -19,7 +19,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 public final class ConsoleManager implements AutoCloseable {
-    private static final Path HISTORY_FILE = Path.of("config", "better-console", "history");
+    private static final Path HISTORY_FILE = Path.of("config", "better-console-line", "history");
     private static final int HISTORY_SIZE = 500;
     private static final int HISTORY_FILE_SIZE = 2000;
 
@@ -45,7 +45,7 @@ public final class ConsoleManager implements AutoCloseable {
         this.commandCompleter = commandCompleter;
         this.logAppender = logAppender;
         this.inputThread = Thread.ofPlatform()
-                .name("Better Console input")
+                .name("Better Console Line input")
                 .daemon(true)
                 .unstarted(this::readCommands);
     }
@@ -139,7 +139,7 @@ public final class ConsoleManager implements AutoCloseable {
     private static Terminal createTerminal() {
         try {
             Terminal terminal = TerminalBuilder.builder()
-                    .name("Better Console")
+                    .name("Better Console Line")
                     .system(true)
                     .providers("exec,jni,ffm")
                     .encoding(StandardCharsets.UTF_8)
@@ -157,7 +157,7 @@ public final class ConsoleManager implements AutoCloseable {
 
     private static LineReader createReader(CommandCompleter commandCompleter, Terminal terminal) {
         LineReaderBuilder builder = LineReaderBuilder.builder()
-                .appName("better-console")
+                .appName("better-console-line")
                 .terminal(terminal)
                 .completer(commandCompleter)
                 .variable(LineReader.HISTORY_SIZE, HISTORY_SIZE)

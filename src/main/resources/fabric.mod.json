@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "better-console",
+	"id": "better-console-line",
 	"version": "${version}",
-	"name": "Better Console",
+	"name": "Better Console Line",
 	"description": "A lightweight JLine-based improvement for the basic Minecraft server console.",
 	"authors": [
 		"hanhy06"
@@ -12,7 +12,7 @@
 		"home": "https://modrinth.com/mod/better-console-line"
 	},
 	"license": "Apache-2.0",
-	"icon": "assets/better-console/icon.png",
+	"icon": "assets/better-console-line/icon.png",
 	"environment": "server",
 	"entrypoints": {
 		"main": [
@@ -20,7 +20,7 @@
 		]
 	},
 	"mixins": [
-		"better-console.mixins.json"
+		"better-console-line.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.19.3",

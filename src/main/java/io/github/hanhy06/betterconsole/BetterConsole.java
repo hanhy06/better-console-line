@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BetterConsole implements ModInitializer {
-    public static final String MOD_ID = "better-console";
+    public static final String MOD_ID = "better-console-line";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
