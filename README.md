@@ -1,4 +1,4 @@
-# Better Console
+# Better Console Line
 
 A lightweight server-side Fabric mod that replaces Minecraft's basic console input with JLine.
 
