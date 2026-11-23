@@ -3,11 +3,7 @@ package io.github.hanhy06.betterconsole.console;
 import io.github.hanhy06.betterconsole.BetterConsole;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.UserInterruptException;
-import org.jline.reader.Widget;
+import org.jline.reader.*;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -18,31 +14,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
-public final class ConsoleManager implements AutoCloseable {
+public final class ConsoleManager {
     private static final Path HISTORY_FILE = Path.of("config", "better-console-line", "history");
     private static final int HISTORY_SIZE = 500;
     private static final int HISTORY_FILE_SIZE = 2000;
 
     private static ConsoleManager INSTANCE;
 
+    private final DedicatedServer server;
     private final Terminal terminal;
     private final LineReader reader;
-    private final CommandCompleter commandCompleter;
     private final ConsoleLogAppender logAppender;
     private final Thread inputThread;
 
-    private volatile DedicatedServer server;
     private volatile boolean running = true;
 
-    private ConsoleManager(
-            Terminal terminal,
-            LineReader reader,
-            CommandCompleter commandCompleter,
-            ConsoleLogAppender logAppender
-    ) {
+    private ConsoleManager(DedicatedServer server, Terminal terminal, LineReader reader, ConsoleLogAppender logAppender) {
+        this.server = server;
         this.terminal = terminal;
         this.reader = reader;
-        this.commandCompleter = commandCompleter;
         this.logAppender = logAppender;
         this.inputThread = Thread.ofPlatform()
                 .name("Better Console Line input")
@@ -50,14 +40,13 @@ public final class ConsoleManager implements AutoCloseable {
                 .unstarted(this::readCommands);
     }
 
-    public static synchronized boolean initialize() {
-        if (INSTANCE != null) return true;
+    public static synchronized boolean start(DedicatedServer server) {
+        if (INSTANCE != null) return INSTANCE.server == server;
 
         Terminal terminal = createTerminal();
         if (terminal == null) return false;
 
-        CommandCompleter commandCompleter = new CommandCompleter();
-        LineReader reader = createReader(commandCompleter, terminal);
+        LineReader reader = createReader(server, terminal);
         ConsoleLogAppender logAppender = ConsoleLogAppender.install(reader, terminal);
         if (logAppender == null) {
             closeTerminal(terminal);
@@ -65,19 +54,8 @@ public final class ConsoleManager implements AutoCloseable {
             return false;
         }
 
-        INSTANCE = new ConsoleManager(terminal, reader, commandCompleter, logAppender);
-        return true;
-    }
-
-    public static synchronized boolean start(DedicatedServer server) {
-        if (!initialize()) return false;
-
-        ConsoleManager manager = INSTANCE;
-        if (manager.server != null) return manager.server == server;
-
-        manager.server = server;
-        manager.commandCompleter.attach(server);
-        manager.inputThread.start();
+        INSTANCE = new ConsoleManager(server, terminal, reader, logAppender);
+        INSTANCE.inputThread.start();
         return true;
     }
 
@@ -89,8 +67,7 @@ public final class ConsoleManager implements AutoCloseable {
         manager.close();
     }
 
-    @Override
-    public void close() {
+    private void close() {
         running = false;
         inputThread.interrupt();
         waitForInputThread();
@@ -108,8 +85,6 @@ public final class ConsoleManager implements AutoCloseable {
     }
 
     private void readCommands() {
-        DedicatedServer server = this.server;
-        if (server == null) return;
 
         while (running && server.isRunning() && !server.isStopped()) {
             try {
@@ -155,11 +130,11 @@ public final class ConsoleManager implements AutoCloseable {
         }
     }
 
-    private static LineReader createReader(CommandCompleter commandCompleter, Terminal terminal) {
+    private static LineReader createReader(DedicatedServer server, Terminal terminal) {
         LineReaderBuilder builder = LineReaderBuilder.builder()
                 .appName("better-console-line")
                 .terminal(terminal)
-                .completer(commandCompleter)
+                .completer(new CommandCompleter(server))
                 .variable(LineReader.HISTORY_SIZE, HISTORY_SIZE)
                 .variable(LineReader.HISTORY_FILE_SIZE, HISTORY_FILE_SIZE);
 

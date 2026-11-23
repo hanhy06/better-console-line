@@ -12,7 +12,6 @@ public class BetterConsole implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ConsoleManager.initialize();
         ServerLifecycleEvents.SERVER_STOPPING.register(ConsoleManager::stop);
     }
 }
